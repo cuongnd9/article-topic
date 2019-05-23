@@ -33,7 +33,11 @@ function App() {
   return (
     <div className="container p-5">
       <h1 className="text-success">Article Topic</h1>
-      <div className="border rounded p-5 my-5" onClick={focusEditor}>
+      <div
+        className="border p-5 my-5"
+        style={{ borderRadius: '12px' }}
+        onClick={focusEditor}
+      >
         <Editor
           ref={editor}
           editorState={editorState}
@@ -42,14 +46,15 @@ function App() {
       </div>
       <input
         className="form-control btn btn-success d-inline mb-5"
+        style={{ borderRadius: '12px' }}
         type="button"
         value="Suggest a topic"
         onClick={fetchData}
       />
       {isFetchData && !topics.length && (
-        <p className="text-center">
+        <div className="text-center">
           <ClipLoader sizeUnit={'px'} size={40} color={'#123abc'} />
-        </p>
+        </div>
       )}
       {topics.length > 0 &&
         topics.map((topic, index) => (
@@ -58,8 +63,10 @@ function App() {
             <p className="badge badge-danger mr-5">50%</p>
           </div>
         ))}
-      <p className="text-secondary text-center">
-        Made with ⌨️ and 🙌
+      <p className="text-secondary text-center mt-5">
+        <span role="img" aria-label="emoji">
+          Made with ⌨️ and 🙌
+        </span>
         <br />
         <small className="text-secondary">© 2019 cuongw</small>
       </p>
