@@ -19,10 +19,22 @@ function App() {
     setTopics([]);
     // Set fetch data status.
     setIsFetchData(true);
+    // Get current text.
+    const currentText = editorState.getCurrentContent().getPlainText();
+    // POST params.
+    const params = {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        content: currentText
+      })
+    };
     // Fecth data from api.
-    fetch('https://api.github.com/users/cuongw/repos')
+    fetch('http://localhost:8000/article/', params)
       .then(res => res.json())
-      .then(data => setTopics(data))
+      .then(data => console.log(data))
       .catch(_ => setTopics([]));
   }
 
