@@ -10,6 +10,7 @@ import gensim
 import os
 import numpy
 import pickle
+import json
 import numpy as np
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -21,51 +22,52 @@ tokenizer = CrfTokenizer()
 num_topic = 35
 
 dictionary = gensim.corpora.Dictionary.load(
-    f'{PROJECT_ROOT}/model/dictionary_{num_topic}.gensim')
-corpus = pickle.load(open(f'{PROJECT_ROOT}/model/corpus_{num_topic}.pkl', 'rb'))
+    f"{PROJECT_ROOT}/model/dictionary_{num_topic}.gensim")
+corpus = pickle.load(open(f"{PROJECT_ROOT}/model/corpus_{num_topic}.pkl", "rb"))
 lda_model = gensim.models.ldamodel.LdaModel.load(
-    f'{PROJECT_ROOT}/model/model_{num_topic}.gensim')
+    f"{PROJECT_ROOT}/model/model_{num_topic}.gensim")
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def index(request):
-    print(request.POST.keys())
-    return HttpResponse()
-    # result = dict()
-    # if request.method == "POST" and request.POST['content']:
-    #     content = request.POST['content']
-    #     print(content)
-    #     if content:
-    #         result['status'] = 'success'
-    #         result['result'] = []
+    body_unicode = request.body.decode("utf-8")
+    body = json.loads(body_unicode)
+    content = body["content"]
+    body = json.loads(body_unicode)
+    content = body["content"]
+    result = dict()
+    if request.method == "POST" and content:
+        if content:
+            result["status"] = "success"
+            result["result"] = []
 
-    #         test_data = preprocess_text(content, tokenizer)
-    #         for test in test_data:
-    #             bow_vector = dictionary.doc2bow(test)
-    #             for index, score in sorted(lda_model[bow_vector],
-    #                                        key=lambda tup: -1 * tup[1]):
-    #                 result['result'].append({
-    #                     'topic': index,
-    #                     'rate': score
-    #                 })
-    #         print(result)
-    #         response =  JsonResponse(str(result), safe=False)
-    #         response["Access-Control-Allow-Origin"] = "*"
-    #         response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    #         response["Access-Control-Max-Age"] = "1000"
-    #         response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
-    #         return response
+            test_data = preprocess_text(content, tokenizer)
+            for test in test_data:
+                bow_vector = dictionary.doc2bow(test)
+                for index, score in sorted(lda_model[bow_vector],
+                                           key=lambda tup: -1 * tup[1]):
+                    result["result"].append({
+                        "topic": index,
+                        "rate": score
+                    })
+            print(result)
+            response =  JsonResponse(str(result), safe=False, content_type="application/json")
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+            response["Access-Control-Max-Age"] = "1000"
+            response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
+            return response
 
-    #     result['status'] = 'error'
-    #     result['data'] = dict()
-    #     response =  JsonResponse(str(result), safe=False)
-    #     response["Access-Control-Allow-Origin"] = "*"
-    #     response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    #     response["Access-Control-Max-Age"] = "1000"
-    #     response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
-    #     return response
-    # else:
-    #     result['status'] = 'error'
-    #     result['data'] = dict()
-    #     return JsonResponse(str(result), safe=False)
+        result["status"] = "error"
+        result["result"] = dict()
+        response =  JsonResponse(str(result), safe=False, content_type="application/json")
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Max-Age"] = "1000"
+        response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
+        return response
+    else:
+        result["status"] = "error"
+        result["data"] = dict()
+        return JsonResponse(str(result), safe=False)
