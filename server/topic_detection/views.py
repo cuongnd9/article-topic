@@ -16,17 +16,22 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-print(PROJECT_ROOT)
 
 tokenizer = CrfTokenizer()
-num_topic = 35
+num_topic = 52
 
 dictionary = gensim.corpora.Dictionary.load(
     f"{PROJECT_ROOT}/model/dictionary_{num_topic}.gensim")
-corpus = pickle.load(open(f"{PROJECT_ROOT}/model/corpus_{num_topic}.pkl", "rb"))
+corpus = pickle.load(
+    open(f"{PROJECT_ROOT}/model/corpus_{num_topic}.pkl", "rb"))
 lda_model = gensim.models.ldamodel.LdaModel.load(
     f"{PROJECT_ROOT}/model/model_{num_topic}.gensim")
 
+def read_file():
+    with open(f"{PROJECT_ROOT}/model/topics", 'r+', encoding='utf8') as file:
+        lines = file.readlines()
+        file.close()
+    return lines
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -41,6 +46,7 @@ def index(request):
         if content:
             result["status"] = "success"
             result["result"] = []
+            topics = read_file()
 
             test_data = preprocess_text(content, tokenizer)
             for test in test_data:
@@ -48,11 +54,12 @@ def index(request):
                 for index, score in sorted(lda_model[bow_vector],
                                            key=lambda tup: -1 * tup[1]):
                     result["result"].append({
-                        "topic": index,
+                        "topic": topics[index].split(': ')[1],
                         "rate": score
                     })
             print(result)
-            response =  JsonResponse(str(result), safe=False, content_type="application/json")
+            response = JsonResponse(
+                str(result), safe=False, content_type="application/json")
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
             response["Access-Control-Max-Age"] = "1000"
@@ -61,7 +68,8 @@ def index(request):
 
         result["status"] = "error"
         result["result"] = dict()
-        response =  JsonResponse(str(result), safe=False, content_type="application/json")
+        response = JsonResponse(str(result), safe=False,
+                                content_type="application/json")
         response["Access-Control-Allow-Origin"] = "*"
         response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
         response["Access-Control-Max-Age"] = "1000"
@@ -71,3 +79,6 @@ def index(request):
         result["status"] = "error"
         result["data"] = dict()
         return JsonResponse(str(result), safe=False)
+
+
+
