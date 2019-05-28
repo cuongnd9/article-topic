@@ -35,7 +35,7 @@ function App() {
     fetch("http://localhost:8000/article/", params)
       .then(res => res.json())
       .then(data => {
-        const { result } = JSON.parse(data.replace(/\'/g, '"'));
+        const { result } = JSON.parse(data.replace(/'/g, '"'));
         setTopics(result);
         setIsFetchData(false);
       })
@@ -51,7 +51,9 @@ function App() {
 
   return (
     <div className="container p-5">
-      <h1 className="text-success">Article Topic</h1>
+      <h1 className="text-success" style={{ fontSize: "60px" }}>
+        Article Topic
+      </h1>
       <div
         className="border p-5 my-5"
         style={{ borderRadius: "12px" }}
@@ -88,8 +90,13 @@ function App() {
         topics.length > 0 &&
         topics.map((topic, index) => (
           <div className="border-bottom d-flex mb-5" key={index}>
-            <p className="h4 text-info w-100 ml-5">{topic.topic}</p>
-            <p className="badge badge-danger mr-5">{topic.rate}</p>
+            <p className="h3 text-info w-100 ml-5">{topic.topic}</p>
+            <p
+              className="badge badge-success mr-5"
+              style={{ fontSize: "18px" }}
+            >
+              {parseFloat(topic.rate * 100).toFixed(2)}%
+            </p>
           </div>
         ))}
       <p className="text-secondary text-center mt-5">
